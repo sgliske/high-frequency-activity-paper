@@ -41,3 +41,11 @@ computeAsym.m           | Auxillery function to compute asymmetries
 getNumStars.m           | Auxillery function to determine the number of stars (enumerated of significance) for a given p-value
 predictionAnalysis.m    | Main function to perform the prediction analysis (Section 2.4 of Stovall et al., 2020).
 transformFeatures.m     | Auxillery function to apply transformations (log or atan) to the feature values.
+
+## Derived (input) data
+
+Filename                    | Description
+--------------------------- | ------------
+data-input/hfo_rates.mat    | HFO rates for comparison
+data-input/raw-data.mat     | Short sample of raw data (for Fig. 1)
+data-input/UMHS-00*.hfa.mat | Features of each 5-minute epoch per channel and related metadata
