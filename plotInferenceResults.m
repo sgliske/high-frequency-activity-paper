@@ -93,7 +93,7 @@ for i=1:2
   hBar(i).CapSize = 0;
 end
 
-xlabel('Odds Ratio [smad]');
+xlabel('Odds Ratio [sMAD]');
 
 nStars = zeros(nF,2);
 % add stars
