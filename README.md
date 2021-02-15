@@ -10,7 +10,7 @@ Derived data is licensed for educational use only, with no warrenty implied.  **
 
 The data files names, and several of the scripts, use a parameter key in the form of
 
-'width-<www>.mask-<x><y>.nBands-<z>'`.
+`'width-<www>.mask-<x><y>.nBands-<z>'`.
   
   * The width values refer to the width of the epoch.  Data was
     computed with values of `<www>` being 120, 300, or 600 (in units
