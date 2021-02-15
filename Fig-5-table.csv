@@ -1,0 +1,13 @@
+ROI,Method A,Method B,p-value,W
+SOZ,HFO Rate,zero,0.0137,49
+SOZ,pHFA Score,zero,0.001,55
+SOZ,Product,zero,0.0049,52
+SOZ,HFO Rate,pHFA Score,0.002,1
+SOZ,HFO Rate,Product,0.0137,6
+SOZ,pHFA Score,Product,0.1875,18
+ RV,HFO Rate,zero,0.0186,48
+ RV,pHFA Score,zero,0.0098,50
+ RV,Product,zero,0.0068,51
+ RV,HFO Rate,pHFA Score,0.1162,15
+ RV,HFO Rate,Product,0.0322,9
+ RV,pHFA Score,Product,0.042,10
