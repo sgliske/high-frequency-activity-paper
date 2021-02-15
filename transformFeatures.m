@@ -3,7 +3,7 @@ function [X, unitKey] = transformFeatures( X, names )
 %
 % Apply the feature transformation based on the feature name
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %

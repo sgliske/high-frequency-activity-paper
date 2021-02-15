@@ -1,38 +1,41 @@
-function data = adjustFeatures( dbKey )
-%% function data = adjustFeatures( dbKey )
+function data = adjustFeatures( dbKey, paramKey )
+%% function data = adjustFeatures( dbKey, paramKey )
 % 
 % Auxillery function to adjust features based on the median value over all
 % channels for a given epoch
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
 
+narginchk(2,2);
+
 %% check if requested to loop over all available data
-if( nargin < 1 || strcmp(dbKey, 'all') )
+if( strcmp(dbKey, 'all') )
   
   %% get list
   tic
-  A = dir('data-input/*hfa.mat');
-  nP = length(A);
+  A = dir(['data-input/*.' paramKey '.hfa.mat']);
+  nFiles = length(A);
   
   %% loop over subjects
-  for i=1:nP
+  for i=1:nFiles
     dbKey = A(i).name(1:9);
     disp(dbKey);
     
     %% Run the function for this subject
-    adjustFeatures( dbKey );
+    adjustFeatures( dbKey, paramKey );
   end
   return
 end
 
 %% load data
-f = load(['data-input/' dbKey '.hfa.mat']);
+f = load(['data-input/' dbKey '.' paramKey '.hfa.mat']);
 
 %% copy metadata
 data.dbKey = dbKey;
+data.paramKey = paramKey;
 data.SOZ = f.SOZ';
 data.RV  = f.RV';
 data.validChan = f.validChan';
@@ -58,16 +61,11 @@ for j=1:nF
   F = F - nanmedian(F);
   
   data.chanLevelFeature(:,j)   = quantile(F, 0.75, 2 );   % location of 75th quantile
-
-  %% check for outlier channels
-  if( j == 27 )
-    data.iqr = iqr( F, 2 );
-    data.outlierChannel = isoutlier( data.iqr, 'median' );
-  end
+  data.outlierChannel = false(size(F,1),1);
 end
 
 %% save
 
 data.featureNames = f.featureNames;
-save(['data-results/' dbKey '.hfa-adjusted.mat'], '-struct', 'data');
+save(['data-results/' dbKey '.' paramKey '.hfa-adjusted.mat'], '-struct', 'data');
 

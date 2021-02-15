@@ -5,14 +5,14 @@ function A = computeAsym( x, ROI )
 % interest (ROI).  <x> and <ROI> expected to be vectors of the same size.
 % <ROI> expected to be logical.
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
 
 assert(all(x>0));
 
-a = mean(x(ROI));
-b = mean(x(~ROI));
+a = mean(x(ROI~=0));
+b = mean(x(ROI==0));
 
 A = (a-b)/(a+b);

@@ -1,16 +1,16 @@
-function plotFeatureExample()
-%% function plotFeatureExample()
+function plotFeatureExample( paramKey )
+%% function plotFeatureExample( paramKey )
 %
 % Plot example feature plot
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
 
 
 %% load features before transformation and normalization
-f = load('data-input/UMHS-0018.hfa.mat');
+f = load(['data-input/UMHS-0018.' paramKey '.hfa.mat']);
 
 % select a few example channels
 chans = [ 2 11 22 30 ];
@@ -21,6 +21,18 @@ epIdx = 525;
 
 % select the feature
 featIdx = 27;
+
+%% cosmetics
+
+% colors (from Okabe and Ito)
+colors = [...
+    0.35    0.70    0.90;...     % 3. sky blue
+    0.95    0.90    0.25;...     % 5. yellow
+    0.00    0.45    0.70;...     % 6. blue
+    0.80    0.60    0.70];       % 8. redish purple
+
+% markers
+markers = 'osdv';
 
 %% transform all features
 
@@ -79,12 +91,26 @@ ax(4).Visible = 'off';
 % plot before adjusting by median
 
 axes(ax(1));
-plot(find(validEpoch), F1(chans,validEpoch)','.')
+hLine = plot(find(validEpoch), F1(chans,validEpoch)','.');
+
+for i=1:length(hLine) 
+    hLine(i).Color = colors(i,:);
+    hLine(i).MarkerFaceColor = colors(i,:);
+    hLine(i).Marker = markers(i);
+    hLine(i).MarkerSize = 2;
+end
 
 % plot after adjusting
 
 axes(ax(2));
 hLine = plot(find(validEpoch), F2(chans,validEpoch)','.');
+
+for i=1:length(hLine) 
+    hLine(i).Color = colors(i,:);
+    hLine(i).MarkerFaceColor = colors(i,:);
+    hLine(i).Marker = markers(i);
+    hLine(i).MarkerSize = 2;
+end
 
 % extra plot for the legend
 axes(ax(4));
@@ -94,10 +120,7 @@ for i=1:nChan
   hForLegend(i).MarkerSize = 30;
   hForLegend(i).MarkerFaceColor = hLine(i).Color;
   hForLegend(i).MarkerEdgeColor = hLine(i).Color;
-
-  %hForLegend(i|nChans).MarkerSize = hForLegend30;
-  %hForLegend(i+nChans).MarkerFaceColor = 'w';
-  %hForLegend(i+nChans).MarkerEdgeColor = hForLegend(i).MarkerEdgeColor;
+  hForLegend(i).Marker = markers(i);
 end
 
 ax(4).Visible = 'off';
@@ -111,7 +134,7 @@ linkaxes( ax([1 2 3]), 'y' );
 %set( hBox, 'LineWidth', 1, 'Color', 'k' );
 set( hBox, 'Color', 'k' );
 for i=1:nChan
-  set( hBox(:,i), 'Color', hLine(i).Color, 'LineStyle', '-'   )
+  set( hBox(:,i), 'Color', colors(i,:), 'LineStyle', '-'   )
 end
 
 for i=1:size(hBox,2)
@@ -120,10 +143,14 @@ for i=1:size(hBox,2)
   % fill the box
   x = get( hBox(5,i), 'Xdata' );
   y = get( hBox(5,i), 'Ydata' );
-  patch( x, y, -ones(size(x)), hLine(i).Color );
+  patch( x, y, -ones(size(x)), colors(i,:) );
   
   % set the median
-  set( hBox(6,i), 'Color', 'k', 'LineWidth', 2 );
+  medColor = 'k';
+  if( ~any(colors(i,:)) )
+      medColor = 'w';
+  end
+  set( hBox(6,i), 'Color', medColor, 'LineWidth', 2 );
   
   % set the outliers
   set( hBox(7,i), 'Marker', 'd', 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k', 'MarkerSize', 2 );
@@ -215,7 +242,5 @@ end
 
 %% save
 
-print(sprintf('plots/featureExample.featIdx-%02d.svg', featIdx), '-dsvg' );
-print(sprintf('plots/featureExample.featIdx-%02d.tif', featIdx), '-dtiff', '-r600' );
-
+print(sprintf('plots/featureExample.%s.featIdx-%02d.eps', paramKey, featIdx), '-depsc' );
 

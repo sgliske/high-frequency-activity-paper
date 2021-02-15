@@ -1,9 +1,9 @@
-function plotRawData()
-%% function plotRawData()
+function plotRawData( paramKey )
+%% function plotRawData( paramKey )
 %
 % Plot example raw data
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
@@ -11,25 +11,38 @@ function plotRawData()
 %% prep
 
 % load features before transformation and normalization
-f = load('data-input/UMHS-0018.hfa.mat');
+f = load(['data-input/UMHS-0018.' paramKey '.hfa.mat']);
 
 % select a few example channels
 chans = [ 2 11 22 30 ];
 nChan = length(chans);
 
 % example epoch for later
-epIdx = 525;
+width = str2double(paramKey(7:9));
+if( width == 300 )
+    epIdx = 525;
+elseif( width == 120 )
+    epIdx = 1313;
+else
+    epIdx = 262;
+end
+
 
 % selected features for this plot
 fIdx = [1 2 8];
 labels = {'Variance [dB]', 'atan(skewness)', 'mean LL [dB]'};
 
-% colors
+
+% colors (from Okabe and Ito)
 colors = [...
-         0    0.4470    0.7410;...
-    0.8500    0.3250    0.0980;...
-    0.9290    0.6940    0.1250;...
-    0.4940    0.1840    0.5560 ];
+    0.35    0.70    0.90;...     % 3. sky blue
+    0.95    0.90    0.25;...     % 5. yellow
+    0.00    0.45    0.70;...     % 6. blue
+    0.80    0.60    0.70];       % 8. redish purple
+
+% markers
+markers = 'osdv';
+
 
 %% prep figure
 
@@ -63,10 +76,10 @@ clear axRow
 clear axFeat
 for i=1:2
   for j=1:4
-    axRaw( i, j  ) = axes( 'Position', [ xOffset+(j-1)*xWidth4 yOffset*(i==1)+(5-2*i)*yWidth xWidth4 yWidth] );  %#ok<SAGROW>
+    axRaw( i, j  ) = axes( 'Position', [ xOffset+(j-1)*xWidth4 yOffset*(i==1)+(5-2*i)*yWidth xWidth4 yWidth] );      %#ok<AGROW>
   end
   for j=1:3
-    axFeat( i, j) = axes( 'OuterPosition', [ xOffset+(j-1)*xWidth3 yOffset*(i==1)+(4-2*i)*yWidth xWidth3 yWidth] );  %#ok<SAGROW>
+    axFeat( i, j) = axes( 'OuterPosition', [ xOffset+(j-1)*xWidth3 yOffset*(i==1)+(4-2*i)*yWidth xWidth3 yWidth] );  %#ok<AGROW>
   end
 end
 
@@ -109,6 +122,7 @@ for k=1:2
       h = gscatter( X(:,i,k), X(:,j,k), (1:4)', colors, 'o', 10, 'off', labels{i}, labels{j} );
       for ii=1:length(h)
         h(ii).MarkerFaceColor = colors(ii,:);
+        h(ii).Marker = markers(ii);
       end
     end
   end
@@ -190,7 +204,5 @@ set( axRaw, 'Visible', 'off' );
 
 %% save
 
-print('plots/rawDataExample.svg', '-dsvg' );
-print('plots/rawDataExample.tif', '-dtiff', '-r600' );
-
+print(['plots/rawDataExample.' paramKey '.eps'], '-depsc' );
 

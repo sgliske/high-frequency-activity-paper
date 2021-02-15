@@ -1,20 +1,22 @@
-function inferenceAnalysis()
-%% function inferenceAnalysis()
+function inferenceAnalysis( paramKey )
+%% function inferenceAnalysis( paramKey )
 %
 % Script to conduct the inference analysis
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
 
 %% load HFOs for comparison
 
-f = load('data-input\hfo_rates.mat');
+f = load('data-input/hfo-rates.mat');
 hfoData = f.results;
 
+rateName = 'rate_qHFO'; % change this line to select which type of HFO
+
 %% load data
-A = dir('data-results/*.hfa-adjusted.mat');
+A = dir(['data-results/*.' paramKey '.hfa-adjusted.mat']);
 assert( ~isempty(A), 'No data files found');
 nP = length(A);
 
@@ -35,13 +37,13 @@ for i=1:nP
   assert( strcmp( hfoData(i).dbKey, dbKey ) );
 
   %% load data
-  f = load(['data-results/' dbKey '.hfa-adjusted.mat']);
+  f = load(['data-results/' dbKey '.' paramKey '.hfa-adjusted.mat']);
 
   %% copy for HFO analysis (less redacted channels)
   valid = f.validChan;
   wide_SOZ{i} = f.SOZ(valid);
   wide_RV{i} = f.RV(valid);
-  wide_hfo_rate{i} = hfoData(i).rate(valid);
+  wide_hfo_rate{i} = hfoData(i).(rateName)(valid);
 
   wide_ID{i} = i*ones(size(wide_SOZ{i}));
 
@@ -51,7 +53,7 @@ for i=1:nP
   SOZ{i} = f.SOZ(valid);
   RV{i} = f.RV(valid);
   ID{i} = i*ones(size(SOZ{i}));
-  hfo_rate{i} = hfoData(i).rate(valid);
+  hfo_rate{i} = hfoData(i).(rateName)(valid);
 end
 
 ID  = cell2mat(ID);
@@ -106,4 +108,4 @@ chanLevelFeatureCorr = corr( [ chanLevelFeature hfo_rate ]);
 
 featureNames = f.featureNames;
 
-save('data-results/inference.mat', 'soz_mdl', 'rv_mdl', 'chanLevelFeatureCorr', 'featureNames', 'scaledMAD' );
+save(['data-results/inference.' paramKey '.mat'], 'soz_mdl', 'rv_mdl', 'chanLevelFeatureCorr', 'featureNames', 'scaledMAD' );

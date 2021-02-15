@@ -1,9 +1,10 @@
-function plotScorePerChannel( dbKey )
-%% function plotScorePerChannel( dbKey )
+function plotScorePerChannel( dbKey, paramKey )
+%% function plotScorePerChannel( dbKey, paramKey )
 %
-% Plot score per channel for given patient ('UMHS-00xx' or 'all')
+% Plot score per channel for given patient ('UMHS-00xx' or 'all') and
+% parameter set
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
@@ -11,16 +12,27 @@ function plotScorePerChannel( dbKey )
 %% loop over all subjects?
 
 if( strcmp(dbKey, 'all') )
-   load('data-results/prediction.mat', 'dbKey' );
+   load(['data-results/prediction.' paramKey '.mat'], 'dbKey' );
    for i=1:length(dbKey)
      plotScorePerChannel(dbKey{i});
    end
    return
 end
 
+%% colors
+
+% colors (from Okabe and Ito, plus two additional grays)
+colors = [...
+    0.00    0.45    0.70;...     % 6. blue
+    0.80    0.40    0.00;...     % 7. vermillion
+    0.95    0.90    0.25;...     % 5. yellow
+    0.75    0.75    0.75;...     % light gray
+    0.50    0.50    0.50;...     % dark gray
+    0.00    0.00    0.00];       % 1. black
+
 %% load hfa data and select subset for one subject
 
-hfaData = load('data-results/prediction.mat');
+hfaData = load(['data-results/prediction.' paramKey '.mat']);
 
 id = strcmp( dbKey, hfaData.dbKey );
 if( ~any(id) )
@@ -43,8 +55,9 @@ valid_2   = hfaData.full(id).notHFAoutlier;
 
 %% load HFOs for comparison
 
-hfoData = load('data-input/hfo_rates.mat');
+hfoData = load('data-input/hfo-rates.mat');
 hfoData = hfoData.results;
+rateName = 'rate_qHFO';
 
 id = strcmp( dbKey, {hfoData.dbKey} );
 if( ~any(id) )
@@ -62,16 +75,16 @@ fig = gcf;
 fig.Position = [50 450 1200 200];
 
 ROI = {'SOZ', 'RV'};
-legendText = {'HFO rate','pHFA Score','Normalized Product'};
+legendText = {'HFO Rate','pHFA Score','Product [a.u.]'};
 
 %% plot
 
 clf
 
-nChan = max( max(chanIdx), length(hfoData.rate) );
+nChan = max( max(chanIdx), length(hfoData.(rateName)) );
 X1 = zeros(nChan,3);
 X2 = zeros(nChan,3);
-X1(:,1) = hfoData.rate;
+X1(:,1) = hfoData.(rateName);
 X2(chanIdx,2) = pHFAscore; 
 X1(:,3) = X1(:,1) .* X2(:,2);
 X1(:,3) = X1(:,3) / max(X1(:,3))*max(X1(:,1));
@@ -95,25 +108,21 @@ y1 = 0;
 y2 = yL_1(1)/nLines;
 
 for i=find(SOZ)'
-  hSOZ = patch( [i i i+1 i+1]-0.5, [y2 y1 y1 y2], [1 1 1]*0.75 );
+  hSOZ = patch( [i i i+1 i+1]-0.5, [y2 y1 y1 y2], colors(4,:) );
   hSOZ.LineStyle = 'none';
 end
 
 for i=find(RV)'
-  hRV = patch( [i i i+1 i+1]-0.5, [y2 y1 y1 y2]+y2, [1 1 1]*0.5 );
+  hRV = patch( [i i i+1 i+1]-0.5, [y2 y1 y1 y2]+y2, colors(5,:) );
   hRV.LineStyle = 'none';
 end
-hV1 = hRV; % dummy value
+
+hRedacted = hRV; % dummy value for legend
 for i=find( ~valid_1 )'
-  hV1 = patch( [i i i+1 i+1]-0.5, [y2 y1 y1 y2]+2*y2, [0 1 0]*0.66 );
-  hV1.LineStyle = 'none';
+  hRedacted = patch( [i i i+1 i+1]-0.5, [y2 y1 y1 y2]+2*y2, colors(6,:) );
+  hRedacted.LineStyle = 'none';
 end
 
-hV2 = hRV; % dummy value
-for i=find( ~valid_2 )'
-  hV2 = patch( [i i i+1 i+1]-0.5, [y2 y1 y1 y2]+2*y2, [0 1 0]*0.33 );
-  hV2.LineStyle = 'none';
-end
 
 %% right plot
 
@@ -128,9 +137,16 @@ scaleFactor = c2/c1;
 yL_2 = scaleFactor * yL_1;
 ylim(yL_2);
 
+
 %% fix cosmetics
 
-h2(2).FaceColor = h1(2).FaceColor;
+for i=1:3
+  h1(i).FaceColor = colors(i,:);
+  h1(i).BarWidth = 1.5;
+  h2(i).FaceColor = colors(i,:);
+  h2(i).BarWidth = 1.5;
+end
+
 g = gca;
 
 g.YAxis(1).Color = h1(1).FaceColor;
@@ -151,17 +167,21 @@ line(xlim(), [0 0], 'Color', 'k' );
 
 xlim([0 nChan+1]);
 
+% remove any ticks below zero
+for i=1:2
+  t = g.YAxis(i).TickValues;
+  g.YAxis(i).TickValues = t(t>=0);
+end
+
 %% legend
 
-hAll = [h1 hSOZ hRV hV1 hV2];
-names = [legendText ROI 'Redacted (preprocessing)' 'Redacted (HFA outlier)'];
+hAll = [h1 hSOZ hRV hRedacted];
+names = [legendText ROI 'Redacted'];
 I = [true(size(legendText)), true(size(ROI)), ~all(valid_1), ~all(valid_2) ];
 
 hL = legend( hAll(I), names(I) );
 hL.Location = 'EastOutside';
-%hL.Position(1) = hL.Position(1) + 0.01;
 
 %% save
-print(['plots/' dbKey '.pHFAscore.svg'], '-dsvg');
-print(['plots/' dbKey '.pHFAscore.tif'], '-dtiff', '-r600');
+print(['plots/' dbKey '.' paramKey '.pHFAscore.eps'], '-depsc');
 

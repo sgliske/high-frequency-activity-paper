@@ -3,7 +3,7 @@ function nStars = getNumStars( p )
 %
 % Number of stars (significance level) for a given p-value
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %

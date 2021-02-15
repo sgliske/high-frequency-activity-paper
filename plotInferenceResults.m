@@ -1,34 +1,76 @@
-function plotInferenceResults()
+function plotInferenceResults( paramKey )
 %% function plotInferenceResults()
 %
 % Plot results of the inference analysis
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
 
 %% load data
 
-f = load('data-results/inference.mat');
+f = load(['data-results/inference.' paramKey '.mat']);
 
-%% fix feature names
+%% old version of feature names
+
 names = [f.featureNames; 'HFO rate'];
 nF = length(names);
+%{
+nBands = floor(nF/19);
+assert( nBands*19+1 == nF );
 
-for k=1:nF-1
+for k=1:nBands*19
   parts = strsplit( names{k}, '_' );
-  names{k} = [parts{1} ' ' parts{2} ' (band ' parts{4} ')'];
+  names{k} = [parts{2} '(' parts{1} '), band ' parts{4} ];
+  %for i=1:2
+  %  names{k+(i-1)*19} = sprintf('f%d (band %d)',k,i);
+  %end
 end
+
+names = strrep( names, 'mean', '\mu' );
+names = strrep( names, 'var', '\sigma' );
+names = strrep( names, 'td', 'y' );
+names = strrep( names, 'rect', 'R(y)' );
+names = strrep( names, 'LL', 'L(y)' );
+names = strrep( names, 'curve', 'C(y)' );
+names = strrep( names, 'TKE', 'T(y)' );
+names = strrep( names, 'var(y)', 'var(x)' );
+ignoreOrderForNames = false;
+%}
+
+%% cleaner label
+
+assert( length(f.featureNames) == 19*2 );
+nF = 39;
+names = cell(nF,1);
+names{nF} = 'HFO rate';
+
+ignoreOrderForNames = true;
+for k=1:19
+  for i=1:2
+    names{k+(i-1)*19} = sprintf('feat. %d (band %d)',k,i);
+  end
+end
+
+%% colors
+
+% colors (from Okabe and Ito)
+colors = [...
+    0.90    0.60    0.00;...     % 2. orange
+    0.00    0.45    0.70;...     % 6. blue
+    0.0    0.0    0.00];         % 0. black
 
 %% Gather data
 
 beta   = zeros(nF,2);
 SE     = zeros(nF,2);
 pValue = zeros(nF,2);
+ROI = {'SOZ','RV'};
+fprintf('Feature, ROI, beta, SE, p-value\n');
 for i=1:nF
   for j=1:2
-    if( j==1 )
+    if( j==1 )  
       mdl = f.soz_mdl{i};
     else
       mdl = f.rv_mdl{i};
@@ -37,6 +79,9 @@ for i=1:nF
     beta(i,j)   = mdl.Coefficients.Estimate(end);
     SE(i,j)     = mdl.Coefficients.SE(end);
     pValue(i,j) = mdl.Coefficients.pValue(end);
+    
+    
+    fprintf('%s,%s,%.4g,%.4g,%.4g\n', names{i},ROI{j},beta(i,j), SE(i,j), pValue(i,j) );
   end
 end
 
@@ -51,7 +96,11 @@ clf
 ROI = {'SOZ', 'RV'};
 
 order = [ 4:4:19 1:4:19 2:4:19 3:4:19 ];
-order = [ order order+19 39 ];
+if( nF == 58 )
+    order = [ order order+19 order+19*2 58 ];
+else
+    order = [ order order+19 39 ];
+end
 
 %% set up the canvas for the error bar plot
 
@@ -59,7 +108,7 @@ clf
 ax = axes('Position', [0.15 0.1 0.37 0.85] );
 hold on
 
-xL = [0.77 2.8];
+xL = [0.5 2.8];
 xlim(xL+[-0.002 0]);
 ylim([-nF 0]);
 
@@ -73,8 +122,11 @@ g.XScale = 'log';
 g.Box = 'off';
 
 g.YTick = (-nF:0)+0.5;
-g.YTickLabel = flip(names(order));
-
+if( ignoreOrderForNames )
+    g.YTickLabel = flip(names);
+else
+    g.YTickLabel = flip(names(order));
+end
 line( [1 1], ylim(), 'Color', 'k', 'LineWidth', 1 );
 
 %
@@ -87,7 +139,8 @@ xH = exp(beta+1.96*SE)-x;
 hBar = errorbar( x(order,:), y(order,:), xL(order,:), xH(order,:), 'horizontal', 'o' );
 
 for i=1:2
-  hBar(i).MarkerFaceColor = hBar(i).Color;
+  hBar(i).Color = colors(i,:);
+  hBar(i).MarkerFaceColor = colors(i,:);
   hBar(i).MarkerSize = 4;
   hBar(i).LineWidth = 2;
   hBar(i).CapSize = 0;
@@ -111,7 +164,8 @@ for j=1:2
   stars.x = cell2mat(stars.x(order));
   stars.y = cell2mat(stars.y(order));
 
-  scatter( stars.x, stars.y, 20, 'r*' );
+  hS = scatter( stars.x, stars.y, 20, '*' );
+  hS.MarkerEdgeColor = colors(3,:);
 end
 
 hL = legend(hBar, ROI);
@@ -159,8 +213,7 @@ fprintf('Number of features per significance level, RV\n');
 tabulate(nStars(:,2));
 
 
-%% save as eps and png files
+%% save as eps file
 
-print('plots/inferenceResults.svg', '-dsvg' );
-print('plots/inferenceResults.tif', '-dtiff', '-r600' );
+print(['plots/inferenceResults.' paramKey '.eps'], '-depsc' );
 

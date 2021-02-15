@@ -1,20 +1,20 @@
-function predictionAnalysis()
-%% function predictionAnalysis()
+function predictionAnalysis( paramKey )
+%% function predictionAnalysis( paramKey )
 %
 % Script to conduct the prediction analysis
 %
-% Created by the research group of Stephen Gliske (sgliske@unmc.edu)
+% Created by the research group of Stephen Gliske (steve.gliske@unmc.edu)
 % Copyright (c) 2020
 % Licensed under GPLv3
 %
 
-
 %% load HFOs for comparison
-f = load('data-input/hfo_rates.mat');
+f = load('data-input/hfo-rates.mat');
 hfoData = f.results;
+rateName = 'rate_qHFO';
 
 %% load data
-A = dir('data-results/*.hfa-adjusted.mat');
+A = dir(['data-results/*.' paramKey '.hfa-adjusted.mat']);
 assert( ~isempty(A), 'No data files found');
 nP = length(A);
 
@@ -32,7 +32,7 @@ for i=1:nP
   assert( strcmp( hfoData(i).dbKey, dbKey{i} ) );
   
   %% load data
-  f = load(['data-results/' dbKey{i} '.hfa-adjusted.mat']);
+  f = load(['data-results/' dbKey{i} '.' paramKey '.hfa-adjusted.mat']);
 
   %% copy
   full{i}.SOZ = f.SOZ;
@@ -44,7 +44,7 @@ for i=1:nP
   hfoData(i).notHFAoutlier = valid;
   hfoData(i).SOZ = f.SOZ(f.validChan);
   hfoData(i).RV  = f.RV(f.validChan);
-  assert( all(f.validChan == isfinite(hfoData(i).rate) ) );
+  assert( all(f.validChan == isfinite(hfoData(i).(rateName)) ) );
   
   chanLevelFeature{i} = f.chanLevelFeature(valid,:);
   chanIdx{i} = find(valid);
@@ -58,7 +58,7 @@ end
 
 ID = cell2mat(ID);
 chanLevelFeature = cell2mat(chanLevelFeature);
-chanIdx = cell2mat(chanIdx); %#ok<NASGU>
+chanIdx = cell2mat(chanIdx);
 SOZ = cell2mat(SOZ);
 RV = cell2mat(RV);
 
@@ -105,7 +105,7 @@ for k=1:nP
   asym.hfa_SOZ(k) = computeAsym( score(testIdx), SOZ(testIdx) );
   asym.hfa_RV(k)  = computeAsym( score(testIdx), RV(testIdx) );
 
-  hfoRate = hfoData(k).rate;
+  hfoRate = hfoData(k).(rateName);
   I = isfinite(hfoRate);
   hfoRate = hfoRate(I);
   valid   = hfoData(k).notHFAoutlier(I);
@@ -126,4 +126,4 @@ full = cell2mat(full);
 
 %%
 
-save('data-results/prediction.mat', 'score', 'RV', 'SOZ', 'ID', 'chanIdx', 'asym', 'dbKey', 'full' );
+save(['data-results/prediction.' paramKey '.mat'], 'score', 'RV', 'SOZ', 'ID', 'chanIdx', 'asym', 'dbKey', 'full' );

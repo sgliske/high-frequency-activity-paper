@@ -6,11 +6,29 @@ Scripts are licensed under GPLv3.
 
 Derived data is licensed for educational use only, with no warrenty implied.  ***Requests must be made with the corresponding author for any other use of the data, including additional research.***
 
+## Parameter key
+
+The data files names, and several of the scripts, use a parameter key in the form of `'width-<www>.mask-<x><y>.nBands-<z>'`.
+  
+  * The width values refer to the width of the epoch.  Data was
+    computed with values of `<www>` being 120, 300, or 600 (in units
+    of seconds).
+  
+  * The mask parameter `<x>` specifies whether HFOs were rejected and
+    the mask parameter `<y>` specifies whether artifacts were
+    redacated: 1 == redacted, 0 == not redacted.
+
+  * The number of bands parameter `<z>` specifies whether to use the
+    data from the 2 or 3 band option.  See text of the manuscript for
+    the specific frequency bands used.
+
+  * The parameter key for the main results is `'width-300.mask-11.nBands-2'`
+
 ## Instructions
 
 1. Clone the repository
 2. Open matlab
-3. Run `full_procol`
+3. Run `full_protocol(paramKey)` with `paramKey` being a string as described above.
 
 ## Scripts
 
@@ -38,6 +56,7 @@ Filename                | Description
 ----------------------- | ------------
 adjustFeatures.m        | Auxillery function to adjust features based on the median value overall channels for a given epoch
 computeAsym.m           | Auxillery function to compute asymmetries
+gbar.m                  | Auxillery function to plot bar plots with multiple groups
 getNumStars.m           | Auxillery function to determine the number of stars (enumerated of significance) for a given p-value
 predictionAnalysis.m    | Main function to perform the prediction analysis (Section 2.4 of Stovall et al., 2020).
 transformFeatures.m     | Auxillery function to apply transformations (log or atan) to the feature values.
@@ -48,4 +67,4 @@ Filename                    | Description
 --------------------------- | ------------
 data-input/hfo_rates.mat    | HFO rates for comparison
 data-input/raw-data.mat     | Short sample of raw data (for Fig. 1)
-data-input/UMHS-00*.hfa.mat | Features of each 5-minute epoch per channel and related metadata
+data-input/UMHS-00*.hfa.mat | Features of each epoch per channel and related metadata.
