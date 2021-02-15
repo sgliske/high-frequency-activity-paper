@@ -8,7 +8,9 @@ Derived data is licensed for educational use only, with no warrenty implied.  **
 
 ## Parameter key
 
-The data files names, and several of the scripts, use a parameter key in the form of `'width-<www>.mask-<x><y>.nBands-<z>'`.
+The data files names, and several of the scripts, use a parameter key in the form of
+
+'width-<www>.mask-<x><y>.nBands-<z>'`.
   
   * The width values refer to the width of the epoch.  Data was
     computed with values of `<www>` being 120, 300, or 600 (in units
@@ -68,3 +70,10 @@ Filename                    | Description
 data-input/hfo_rates.mat    | HFO rates for comparison
 data-input/raw-data.mat     | Short sample of raw data (for Fig. 1)
 data-input/UMHS-00*.hfa.mat | Features of each epoch per channel and related metadata.
+
+## Other files
+
+Filename        | Description
+----------------|----------------
+Fig-3-table.csv | Table of values to support Figure 3.
+Fig-5-table.csv | Table of values to support Figure 5.
